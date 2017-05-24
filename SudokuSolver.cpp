@@ -1,231 +1,352 @@
 #include <iostream>
+#include <cmath>
+#include <string>
 #include <ctime>
-
 using namespace std;
 
-void CheckBoard(int Sudoku[][9], bool Filled[], int row, int col); //Checks what possible numbers can be placed in a given position
-void SolvePuzzle(int Sudoku[][9], bool Filled[], int row, int col); //Solves the Sudoku Puzzle
-void PrintBoard(int Puzzle[][9]); //Print the Sudoku Puzzle in its current state
-bool completion = false; //Used to release all stack frames
-void StartSolve(int Sudoku[][9], bool Filled[10]);
+#define MAX_K 1000
 
-void SolvePuzzle(int Sudoku[][9], bool Filled[], int row, int col)
-{
+//#define SIZE 16
+#define SIZE 9
+//#define SIZE 4
 
-	if(completion) //completion is true when the puzzle has been solved
-	{
-		if(row == 0 && col == 0) //if we are in the starting position, then we are calling this function after having solved a previous puzzle
-		{						 //We need to reinitialize
-			completion = false;
-			SolvePuzzle(Sudoku, Filled, 0, 0);
-		}
-	}
+#define SIZE_SQUARED (SIZE*SIZE)
+#define SIZE_SQRT ((int)sqrt(SIZE))
+#define ROW_NB (SIZE*SIZE*SIZE)
+#define COL_NB (4*SIZE*SIZE)
 
-	else if(row == 9) //if row == 9 it means that the last position has been filled --> The puzzle has been solved
-	{
-		cout<<"Success!" <<endl <<endl;
-		completion = true; //Set completion to true to release all stack frames
-	}
+struct Node {
 
-	else if(Sudoku[row][col] > 0) //Current position is filled
-	{
-		//condition for no solution
-		if(col == 8)
-			SolvePuzzle(Sudoku, Filled, row+1, 0);
-		else
-			SolvePuzzle(Sudoku, Filled, row, col+1);
-	}
+	Node *left;
+	Node *right;
+	Node *up;
+	Node *down;
+	Node *head;
+	
+	int size; //used for Column header
+	int rowID[3];	//used to identify row in order to map solutions to a sudoku grid
+					//ID Format: (Candidate, Row, Column)
+};
 
-	else //Fill Current position
-	{
+struct Node Head;
+struct Node* HeadNode = &Head;
+struct Node* solution[MAX_K];
+struct Node* orig_values[MAX_K];
+bool matrix[ROW_NB][COL_NB] = { { 0 } };
+void MapSolutionToGrid(int Puzzle[][SIZE]);
+void PrintGrid(int Puzzle[][SIZE]);
 
-		for(int l=1;l<10;l++) //We try all possible numbers
-		{
-			CheckBoard(Sudoku, Filled, row, col); //Set in Filled[] what numbers have already been placed
+clock_t timer, timer2;
 
-			if(!Filled[l]) //if Filled[l] == false, then l is a possibility --> we proceed
-			{			
-				Sudoku[row][col] = l;		
-				if(col == 8)
-					SolvePuzzle(Sudoku, Filled, row+1, 0);
-				else
-					SolvePuzzle(Sudoku, Filled, row, col+1);
-			}
-		}
-		
-		if(!completion) //If the puzzle is complete, we would like to maintain Sudoku[][] in its solved state
-		{
-			Sudoku[row][col] = 0;
-			if (row == 0 && col == 0)
-				cout << "Invalid Grid" << endl;
+//===============================================================================================================//
+//---------------------------------------------DLX Functions-----------------------------------------------------//
+//===============================================================================================================//
+
+void coverColumn(Node* col) {
+	col->left->right = col->right;
+	col->right->left = col->left;
+	for (Node* node = col->down; node != col; node = node->down) {
+		for (Node* temp = node->right; temp != node; temp = temp->right) {
+			temp->down->up = temp->up;
+			temp->up->down = temp->down;
+			temp->head->size--;
 		}
 	}
 }
 
-
-int main()
-{
-	//Empty Puzzle
-	int EmptyPuzzle[9][9] = {                   {0,0,0,  0,0,0,  0,0,0},
-		 			                            {0,0,0,  0,0,0,  0,0,0},
-     	 			                            {0,0,0,  0,0,0,  0,0,0},
- 
- 					                            {0,0,0,  0,0,0,  0,0,0},
-					                            {0,0,0,  0,0,0,  0,0,0},
-					                            {0,0,0,  0,0,0,  0,0,0},
- 
- 					                            {0,0,0,  0,0,0,  0,0,0},
-					                            {0,0,0,  0,0,0,  0,0,0},
-					                            {0,0,0,  0,0,0,  0,0,0}
-							};
-	//Hardest Sudoku Puzzle in the World
-	int Puzzle[9][9] = {                        {8,0,0,  0,0,0,  0,0,0},
-		 			                            {0,0,3,  6,0,0,  0,0,0},
-     	 			                            {0,7,0,  0,9,0,  2,0,0},
- 
- 					                            {0,5,0,  0,0,7,  0,0,0},
-					                            {0,0,0,  0,4,5,  7,0,0},
-					                            {0,0,0,  1,0,0,  0,3,0},
- 
- 					                            {0,0,1,  0,0,0,  0,6,8},
-					                            {0,0,8,  5,0,0,  0,1,0},
-					                            {0,9,0,  0,0,0,  4,0,0}
-	                    };
-	//Hard Sudoku for Brute Force
-	int HardPuzzle[9][9] = {					{0,0,0,  0,0,0,  0,0,0},
-		 			                            {0,0,0,  0,0,3,  0,8,5},
-     	 			                            {0,0,1,  0,2,0,  0,0,0},
- 
- 					                            {0,0,0,  5,0,7,  0,0,0},
-					                            {0,0,4,  0,0,0,  1,0,0},
-					                            {0,9,0,  0,0,0,  0,0,0},
- 
- 					                            {5,0,0,  0,0,0,  0,7,3},
-					                            {0,0,2,  0,1,0,  0,0,0},
-					                            {0,0,0,  0,4,0,  0,0,9}
-	                    };
-
-	bool Filled[10] = {0}, Filled2[10] = {0}, Filled3[10] = {0};
-	clock_t timer;
-
-	PrintBoard(EmptyPuzzle);
-	timer = clock();
-	SolvePuzzle(EmptyPuzzle, Filled2, 0, 0);
-	timer = clock() - timer;
-	PrintBoard(EmptyPuzzle);
-
-	cout<<"Time Elapsed: " <<(float)timer/CLOCKS_PER_SEC <<" seconds." <<endl <<endl;
-
-
-	PrintBoard(Puzzle);
-	timer = clock();
-	//SolvePuzzle(Puzzle, Filled, 0, 0);
-	StartSolve(Puzzle, Filled);
-	timer = clock() - timer;
-	PrintBoard(Puzzle);
-
-	cout<<"Time Elapsed: " <<(float)timer/CLOCKS_PER_SEC <<" seconds." <<endl <<endl;
-
-	PrintBoard(HardPuzzle);
-	timer = clock();
-	//SolvePuzzle(HardPuzzle, Filled3, 0, 0);
-	StartSolve(HardPuzzle, Filled3);
-	timer = clock() - timer;
-	PrintBoard(HardPuzzle);
-
-	cout<<"Time Elapsed: " <<(float)timer/CLOCKS_PER_SEC <<" seconds." <<endl <<endl;
-
-
-	system("pause");
-	return 0;
+void uncoverColumn(Node* col) {
+	for (Node* node = col->up; node != col; node = node->up) {
+		for (Node* temp = node->left; temp != node; temp = temp->left) {
+			temp->head->size++;
+			temp->down->up = temp;
+			temp->up->down = temp;
+		}
+	}
+	col->left->right = col;
+	col->right->left = col;
 }
 
-void StartSolve(int Sudoku[][9], bool Filled[10])
-{
-	int count1 = 0, count2 = 0;
+void search(int k) {
 
-	for (int i = 0; i < 9; i++)
-	{
-		if (Sudoku[0][i] > 0)
-			count1++;
-		if (Sudoku[8][i] > 0)
-			count2++;
-	}
-
-	if (count2 > count1+1)
-	{
-		int temp;
-		for (int i = 0; i < 4; i++)
-			for (int j = 0; j < 9; j++)
-				swap(Sudoku[i][j], Sudoku[8 - i][j]);
-
-		SolvePuzzle(Sudoku, Filled, 0, 0);
-
-		for (int i = 0; i < 4; i++)
-			for (int j = 0; j < 9; j++)
-				swap(Sudoku[i][j], Sudoku[8 - i][j]);
-
+	if (HeadNode->right == HeadNode) {
+		timer2 = clock() - timer;
+		int Grid[SIZE][SIZE] = { {0} };
+		MapSolutionToGrid(Grid);
+		PrintGrid(Grid);
+		cout << "Time Elapsed: " << (float)timer2 / CLOCKS_PER_SEC << " seconds." << endl << endl;
+		system("pause");
+		timer = clock();
 		return;
 	}
 
-	SolvePuzzle(Sudoku, Filled, 0, 0);
-}
+	//Choose Column Object Deterministically: Choose the column with the smallest Size
+	Node* Col = HeadNode->right;
+	for (Node* temp = Col->right; temp != HeadNode; temp = temp->right)
+		if (temp->size < Col->size)
+			Col = temp;
 
-void CheckBoard(int Sudoku[][9], bool Filled[], int row, int col)
-{
-	int i,k;
+	coverColumn(Col);
 
-	for(i=0; i<10; i++)
-		Filled[i] = false;
+	for (Node* temp = Col->down; temp != Col; temp = temp->down) {
+		solution[k] = temp;
+		for (Node* node = temp->right; node != temp; node = node->right) {
+			coverColumn(node->head);
+		}
 
-	//Check Horizontal & Vertical
-	for(i=0; i<9; i++)
-	{
-		if(Sudoku[row][i] != 0)
-			Filled[Sudoku[row][i]] = true;
-		if(Sudoku[i][col] != 0)
-			Filled[Sudoku[i][col]] = true;
+		search(k + 1);
+
+		temp = solution[k];
+		solution[k] = NULL;
+		Col = temp->head;
+		for (Node* node = temp->left; node != temp; node = node->left) {
+			uncoverColumn(node->head);
+		}
 	}
 
-	//Check Box
-	//It is located between (rowStart,ColStart) and (rowStart+3,colStart+3)
-	int rowStart = 0;
-	if(row>2)
-		rowStart += 3;
-	if(row>5)
-		rowStart += 3;
-
-	int colStart = 0;
-	if(col>2)
-		colStart += 3;
-	if(col>5)
-		colStart += 3;
-
-	for(i = rowStart; i < rowStart+3;i++)
-		for(k = colStart; k < colStart+3; k++)
-			if(Sudoku[i][k]!=0)
-					Filled[Sudoku[i][k]]=true;
+	uncoverColumn(Col);
 }
 
-void PrintBoard(int Puzzle[][9])
-{
-	cout<<"+-----------------------+"<<endl;
-	for(int i=0; i<9; i++)
-		{
-			
-			cout<<"| ";
-			for(int j=0; j<9; j++)
-			{
-				if(Puzzle[i][j] == 0)
-					cout<<". ";
-				else
-					cout<<Puzzle[i][j] <<" ";
-				if(j==2 || j==5 || j==8)
-					cout<<"| ";
-			}
-			cout<<endl;
-			if(i==2 || i==5)
-				cout<<"|-------+-------+-------|" <<endl;
+//===============================================================================================================//
+//----------------------Functions to turn a Sudoku grid into an Exact Cover problem -----------------------------//
+//===============================================================================================================//
+
+//--------------------------BUILD THE INITIAL MATRIX CONTAINING ALL POSSIBILITIES--------------------------------//
+void BuildSparseMatrix(bool matrix[ROW_NB][COL_NB]) {
+
+													  //Constraint 1: There can only be one value in any given cell
+	int j = 0, counter = 0;
+	for (int i = 0; i < ROW_NB; i++) { //iterate over all rows
+		matrix[i][j] = 1;
+		counter++;
+		if (counter >= SIZE) {
+			j++;
+			counter = 0;
 		}
-	cout<<"+-----------------------+"<<endl <<endl;
+	}
+
+	//Constraint 2: There can only be one instance of a number in any given row
+	int x = 0;
+	counter = 1;
+	for (j = SIZE_SQUARED; j < 2 * SIZE_SQUARED; j++) {
+		for (int i = x; i < counter*SIZE_SQUARED; i += SIZE)
+			matrix[i][j] = 1;
+
+		if ((j + 1) % SIZE == 0) {
+			x = counter*SIZE_SQUARED;
+			counter++;
+		}
+		else
+			x++;
+	}
+
+	//Constraint 3: There can only be one instance of a number in any given column
+	j = 2 * SIZE_SQUARED;
+	for (int i = 0; i < ROW_NB; i++)
+	{
+		matrix[i][j] = 1;
+		j++;
+		if (j >= 3 * SIZE_SQUARED)
+			j = 2 * SIZE_SQUARED;
+	}
+
+	//Constraint 4: There can only be one instance of a number in any given region
+	x = 0;
+	for (j = 3 * SIZE_SQUARED; j < COL_NB; j++) {
+
+		for (int l = 0; l < SIZE_SQRT; l++) {
+			for (int k = 0; k<SIZE_SQRT; k++)
+				matrix[x + l*SIZE + k*SIZE_SQUARED][j] = 1;
+		}
+
+		int temp = j + 1 - 3 * SIZE_SQUARED;
+
+		if (temp % (int)(SIZE_SQRT * SIZE) == 0)
+			x += (SIZE_SQRT - 1)*SIZE_SQUARED + (SIZE_SQRT - 1)*SIZE + 1;
+		else if (temp % SIZE == 0)
+			x += SIZE*(SIZE_SQRT - 1) + 1;
+		else
+			x++;
+	}
+}
+
+//-------------------BUILD A TOROIDAL DOUBLY LINKED LIST OUT OF THE SPARSE MATRIX-------------------------//
+void BuildLinkedList(bool matrix[ROW_NB][COL_NB]) {
+
+	Node* header = new Node;
+	header->left = header;
+	header->right = header;
+	header->down = header;
+	header->up = header;
+	header->size = -1;
+	header->head = header;
+	Node* temp = header;
+
+	//Create all Column Nodes
+	for (int i = 0; i < COL_NB; i++) {
+		Node* newNode = new Node;
+		newNode->size = 0;
+		newNode->up = newNode;
+		newNode->down = newNode;
+		newNode->head = newNode;
+		newNode->right = header;
+		newNode->left = temp;
+		temp->right = newNode;
+		temp = newNode;
+	}
+
+	int ID[3] = { 0,1,1 };
+	//Add a Node for each 1 present in the sparse matrix and update Column Nodes accordingly
+	for (int i = 0; i < ROW_NB; i++) {
+		Node* top = header->right;
+		Node* prev = NULL;
+
+		if (i != 0 && i%SIZE_SQUARED == 0) {
+			ID[0] -= SIZE - 1;
+			ID[1]++;
+			ID[2] -= SIZE - 1;
+		}
+		else if (i!= 0 && i%SIZE == 0) {
+			ID[0] -= SIZE - 1;
+			ID[2]++;
+		}
+		else {
+			ID[0]++;
+		}
+
+		for (int j = 0; j < COL_NB; j++, top = top->right) {
+			if (matrix[i][j]) {
+				Node* newNode = new Node;
+				newNode->rowID[0] = ID[0];
+				newNode->rowID[1] = ID[1];
+				newNode->rowID[2] = ID[2];
+				if (prev == NULL) {
+					prev = newNode;
+					prev->right = newNode;
+				}
+				newNode->left = prev;
+				newNode->right = prev->right;
+				newNode->right->left = newNode;
+				prev->right = newNode;
+				newNode->head = top;
+				newNode->down = top;
+				newNode->up = top->up;
+				top->up->down = newNode;
+				top->size++;
+				top->up = newNode;
+				if (top->down == top)
+					top->down = newNode;
+				prev = newNode;
+			}
+		}
+	}
+
+	HeadNode = header;
+}
+
+//-------------------COVERS VALUES THAT ARE ALREADY PRESENT IN THE GRID-------------------------//
+void TransformListToCurrentGrid(int Puzzle[][SIZE]) {
+	int index = 0;
+	for(int i = 0 ; i<SIZE; i++ )
+		for(int j = 0 ; j<SIZE; j++)
+			if (Puzzle[i][j] > 0) {
+				Node* Col = NULL;
+				Node* temp = NULL;
+				for (Col = HeadNode->right; Col != HeadNode; Col = Col->right) {
+					for (temp = Col->down; temp != Col; temp = temp->down)
+						if (temp->rowID[0] == Puzzle[i][j] && (temp->rowID[1] - 1) == i && (temp->rowID[2] - 1) == j)
+							goto ExitLoops;
+				}
+ExitLoops:		coverColumn(Col);
+				orig_values[index] = temp;
+				index++;
+				for (Node* node = temp->right; node != temp; node = node->right) {
+					coverColumn(node->head);
+				}
+
+			}
+
+}
+
+//===============================================================================================================//
+//----------------------------------------------- Print Functions -----------------------------------------------//
+//===============================================================================================================//
+
+void MapSolutionToGrid(int Puzzle[][SIZE]) {
+	
+	for (int i = 0; solution[i] != NULL; i++) {
+			Puzzle[solution[i]->rowID[1]-1][solution[i]->rowID[2]-1] = solution[i]->rowID[0];
+	}
+	for (int i = 0; orig_values[i] != NULL; i++) {
+		Puzzle[orig_values[i]->rowID[1] - 1][orig_values[i]->rowID[2] - 1] = orig_values[i]->rowID[0];
+	}
+}
+
+//---------------------------------PRINTS A SUDOKU GRID OF ANY SIZE---------------------------------------------//
+void PrintGrid(int Puzzle[][SIZE]){
+	string ext_border = "+", int_border = "|";
+	int counter = 1;
+	int additional = 0;
+	if (SIZE > 9)
+		additional = SIZE;
+	for (int i = 0; i < ((SIZE +SIZE_SQRT - 1) * 2 +additional+ 1); i++) {
+		ext_border += '-';
+		
+		if (i > 0 && i % ((SIZE_SQRT*2+SIZE_SQRT*(SIZE>9)+1)*counter + counter-1) == 0) {
+			int_border += '+';
+			counter++;
+		}
+		else
+			int_border += '-';
+	}
+	ext_border += '+';
+	int_border += "|";
+
+	cout << ext_border << endl;
+	for (int i = 0; i<SIZE; i++){
+		cout << "| ";
+		for (int j = 0; j<SIZE; j++){
+			if (Puzzle[i][j] == 0)
+				cout << ". ";
+			else
+				cout << Puzzle[i][j] << " ";
+			if (additional > 0 && Puzzle[i][j]<10)
+				cout << " ";
+			if ((j+1)%SIZE_SQRT == 0)
+				cout << "| ";
+		}
+		cout << endl;
+		if ((i + 1) % SIZE_SQRT == 0 && (i+1)<SIZE)
+			cout << int_border << endl;
+	}
+	cout << ext_border << endl << endl;
+}
+
+//--------------------------------------------------------------------------------//
+
+int main(){
+		//Sudoku Hard to Brute Force
+		int Puzzle[9][9] =		{	{ 0,0,0,  0,0,0,  0,0,0 },
+									{ 0,0,0,  0,0,3,  0,8,5 },
+									{ 0,0,1,  0,2,0,  0,0,0 },
+
+									{ 0,0,0,  5,0,7,  0,0,0 },
+									{ 0,0,4,  0,0,0,  1,0,0 },
+									{ 0,9,0,  0,0,0,  0,0,0 },
+
+									{ 5,0,0,  0,0,0,  0,7,3 },
+									{ 0,0,2,  0,1,0,  0,0,0 },
+									{ 0,0,0,  0,4,0,  0,0,9 }
+								};
+
+
+
+	int EmptyPuzzle[SIZE][SIZE] = { {0} };
+
+	timer = clock();
+	BuildSparseMatrix(matrix);
+	BuildLinkedList(matrix);
+	TransformListToCurrentGrid(Puzzle);
+	search(0);
+
+	return 0;
 }
