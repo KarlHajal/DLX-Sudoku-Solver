@@ -10,11 +10,6 @@ using namespace std;
 #define SIZE 9
 //#define SIZE 4
 
-#define SIZE_SQUARED (SIZE*SIZE)
-#define SIZE_SQRT ((int)sqrt(SIZE))
-#define ROW_NB (SIZE*SIZE*SIZE)
-#define COL_NB (4*SIZE*SIZE)
-
 struct Node {
 
 	Node *left;
@@ -23,18 +18,24 @@ struct Node {
 	Node *down;
 	Node *head;
 	
-	int size; //used for Column header
+	int size;		//used for Column header
 	int rowID[3];	//used to identify row in order to map solutions to a sudoku grid
 					//ID Format: (Candidate, Row, Column)
 };
+
+const int SIZE_SQUARED = SIZE*SIZE;
+const int SIZE_SQRT = (int)sqrt(SIZE);
+const int ROW_NB = SIZE*SIZE*SIZE;
+const int COL_NB = 4 * SIZE*SIZE;
 
 struct Node Head;
 struct Node* HeadNode = &Head;
 struct Node* solution[MAX_K];
 struct Node* orig_values[MAX_K];
 bool matrix[ROW_NB][COL_NB] = { { 0 } };
-void MapSolutionToGrid(int Puzzle[][SIZE]);
-void PrintGrid(int Puzzle[][SIZE]);
+bool isSolved = false;
+void MapSolutionToGrid(int Sudoku[][SIZE]);
+void PrintGrid(int Sudoku[][SIZE]);
 
 clock_t timer, timer2;
 
@@ -76,6 +77,7 @@ void search(int k) {
 		cout << "Time Elapsed: " << (float)timer2 / CLOCKS_PER_SEC << " seconds." << endl << endl;
 		system("pause");
 		timer = clock();
+		isSolved = true;
 		return;
 	}
 
@@ -113,7 +115,7 @@ void search(int k) {
 //--------------------------BUILD THE INITIAL MATRIX CONTAINING ALL POSSIBILITIES--------------------------------//
 void BuildSparseMatrix(bool matrix[ROW_NB][COL_NB]) {
 
-													  //Constraint 1: There can only be one value in any given cell
+	//Constraint 1: There can only be one value in any given cell
 	int j = 0, counter = 0;
 	for (int i = 0; i < ROW_NB; i++) { //iterate over all rows
 		matrix[i][j] = 1;
@@ -271,18 +273,18 @@ ExitLoops:		coverColumn(Col);
 //----------------------------------------------- Print Functions -----------------------------------------------//
 //===============================================================================================================//
 
-void MapSolutionToGrid(int Puzzle[][SIZE]) {
+void MapSolutionToGrid(int Sudoku[][SIZE]) {
 	
 	for (int i = 0; solution[i] != NULL; i++) {
-			Puzzle[solution[i]->rowID[1]-1][solution[i]->rowID[2]-1] = solution[i]->rowID[0];
+			Sudoku[solution[i]->rowID[1]-1][solution[i]->rowID[2]-1] = solution[i]->rowID[0];
 	}
 	for (int i = 0; orig_values[i] != NULL; i++) {
-		Puzzle[orig_values[i]->rowID[1] - 1][orig_values[i]->rowID[2] - 1] = orig_values[i]->rowID[0];
+		Sudoku[orig_values[i]->rowID[1] - 1][orig_values[i]->rowID[2] - 1] = orig_values[i]->rowID[0];
 	}
 }
 
 //---------------------------------PRINTS A SUDOKU GRID OF ANY SIZE---------------------------------------------//
-void PrintGrid(int Puzzle[][SIZE]){
+void PrintGrid(int Sudoku[][SIZE]){
 	string ext_border = "+", int_border = "|";
 	int counter = 1;
 	int additional = 0;
@@ -305,11 +307,11 @@ void PrintGrid(int Puzzle[][SIZE]){
 	for (int i = 0; i<SIZE; i++){
 		cout << "| ";
 		for (int j = 0; j<SIZE; j++){
-			if (Puzzle[i][j] == 0)
+			if (Sudoku[i][j] == 0)
 				cout << ". ";
 			else
-				cout << Puzzle[i][j] << " ";
-			if (additional > 0 && Puzzle[i][j]<10)
+				cout << Sudoku[i][j] << " ";
+			if (additional > 0 && Sudoku[i][j]<10)
 				cout << " ";
 			if ((j+1)%SIZE_SQRT == 0)
 				cout << "| ";
@@ -322,6 +324,17 @@ void PrintGrid(int Puzzle[][SIZE]){
 }
 
 //--------------------------------------------------------------------------------//
+
+void SolveSudoku(int Sudoku[][SIZE]) {
+	timer = clock();
+	BuildSparseMatrix(matrix);
+	BuildLinkedList(matrix);
+	TransformListToCurrentGrid(Sudoku);
+	search(0);
+	if (!isSolved)
+		cout << "No Solution!" << endl;
+	isSolved = false;
+}
 
 int main(){
 		//Sudoku Hard to Brute Force
@@ -342,11 +355,7 @@ int main(){
 
 	int EmptyPuzzle[SIZE][SIZE] = { {0} };
 
-	timer = clock();
-	BuildSparseMatrix(matrix);
-	BuildLinkedList(matrix);
-	TransformListToCurrentGrid(Puzzle);
-	search(0);
+	SolveSudoku(Puzzle);
 
 	return 0;
 }
