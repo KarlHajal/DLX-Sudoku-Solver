@@ -18,6 +18,12 @@ html, body, div {
     margin-left: 40px;
   }
 
+  #SolvedText{
+    text-align:center;
+    font-weight:bold;
+    color:red;
+  }
+
   td{
     border-collapse: collapse;
     text-align: center;
@@ -68,7 +74,7 @@ html, body, div {
   .header{position: fixed; width: 100%; margin-bottom:100%;top: 0; height: 60px; background: black; color: white;}
   .push{margin-bottom: 50%}
   .clear{clear:both;}
-  .buttons{text-align:center; margin-top: 3%;}
+  .buttons{text-align:center; margin-top: 0%;}
 
   .ButtonClass {
   border : solid 0px #000000;

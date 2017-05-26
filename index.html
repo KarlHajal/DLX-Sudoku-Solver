@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Sudoku Solver</title>
+  <meta charset = "UTF-8">
+  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Raleway">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="wrapper">
+  <div class="header">
+    <p style="text-align:left; font-size:24px;"> Sudoku Solver
+    <span style="float:right; font-size:18px"> Karl Hajal</span></p>
+
+    <div class="push"></div>
+    <div class="clear"></div>
+    <h1>Solved</h1>
+  </div>
+  <table id="SudokuGrid" align = "center">
+     <tr id = "regcolumn">
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R1C1"/></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R1C2"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R1C3"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R1C4"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R1C5"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R1C6"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R1C7"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R1C8"></td>
+       <td><input type="text" onkeypress="return limitKey(event,this.value)" id="R1C9"></td>
+     </tr>
+     <tr id = "regcolumn">
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R2C1"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R2C2"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R2C3"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R2C4"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R2C5"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R2C6"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R2C7"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R2C8"></td>
+       <td><input type="text" onkeypress="return limitKey(event,this.value)" id="R2C9"></td>
+     </tr>
+     <tr id = "bordercolumn">
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R3C1"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R3C2"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R3C3"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R3C4"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R3C5"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R3C6"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R3C7"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R3C8"></td>
+       <td><input type="text" onkeypress="return limitKey(event,this.value)" id="R3C9"></td>
+     </tr>
+     <tr id = "regcolumn">
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R4C1"/></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R4C2"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R4C3"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R4C4"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R4C5"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R4C6"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R4C7"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R4C8"></td>
+       <td><input type="text" onkeypress="return limitKey(event,this.value)" id="R4C9"></td>
+     </tr>
+     <tr id = "regcolumn">
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R5C1"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R5C2"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R5C3"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R5C4"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R5C5"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R5C6"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R5C7"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R5C8"></td>
+       <td><input type="text" onkeypress="return limitKey(event,this.value)" id="R5C9"></td>
+     </tr>
+     <tr id = "bordercolumn">
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R6C1"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R6C2"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R6C3"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R6C4"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R6C5"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R6C6"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R6C7"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R6C8"></td>
+       <td><input type="text" onkeypress="return limitKey(event,this.value)" id="R6C9"></td>
+     </tr>
+     <tr id = "regcolumn">
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R7C1"/></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R7C2"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R7C3"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R7C4"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R7C5"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R7C6"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R7C7"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R7C8"></td>
+       <td><input type="text" onkeypress="return limitKey(event,this.value)" id="R7C9"></td>
+     </tr>
+     <tr id = "regcolumn">
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R8C1"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R8C2"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R8C3"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R8C4"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R8C5"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R8C6"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R8C7"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R8C8"></td>
+       <td><input type="text" onkeypress="return limitKey(event,this.value)" id="R8C9"></td>
+     </tr>
+     <tr>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R9C1"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R9C2"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R9C3"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R9C4"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R9C5"></td>
+       <td id = "bordercell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R9C6"></td>
+
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R9C7"></td>
+       <td id = "regcell"><input type="text" onkeypress="return limitKey(event,this.value)" id="R9C8"></td>
+       <td><input type="text" onkeypress="return limitKey(event,this.value)" id="R9C9"></td>
+     </tr>
+   </table>
+</div>
+
+<div class="clear"></div>
+
+<p id = "SolvedText">&nbsp</p>
+
+<div class="buttons">
+  <input type="button" class = "ButtonClass" id = "SolveButton" value="Solve">
+  <input type="button" class = "ButtonClass" id = "ResetButton" value="Reset">
+</div>
+
+<script type="text/javascript" src="solver.js" ></script>
+
+</body>
+
+</html>
