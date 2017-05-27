@@ -2,6 +2,7 @@
 #include <cmath>
 #include <string>
 #include <ctime>
+using namespace std;
 
 #define MAX_K 1000
 
@@ -23,7 +24,7 @@ struct Node {
 };
 
 const int SIZE_SQUARED = SIZE*SIZE;
-const int SIZE_SQRT = sqrt((double)SIZE);
+const int SIZE_SQRT = (int)sqrt(SIZE);
 const int ROW_NB = SIZE*SIZE*SIZE;
 const int COL_NB = 4 * SIZE*SIZE;
 
@@ -73,7 +74,7 @@ void search(int k) {
 		int Grid[SIZE][SIZE] = { {0} };
 		MapSolutionToGrid(Grid);
 		PrintGrid(Grid);
-		std::cout << "Time Elapsed: " << (float)timer2 / CLOCKS_PER_SEC << " seconds.\n\n";
+		cout << "Time Elapsed: " << (float)timer2 / CLOCKS_PER_SEC << " seconds." << endl << endl;
 		system("pause");
 		timer = clock();
 		isSolved = true;
@@ -284,7 +285,7 @@ void MapSolutionToGrid(int Sudoku[][SIZE]) {
 
 //---------------------------------PRINTS A SUDOKU GRID OF ANY SIZE---------------------------------------------//
 void PrintGrid(int Sudoku[][SIZE]){
-	std::string ext_border = "+", int_border = "|";
+	string ext_border = "+", int_border = "|";
 	int counter = 1;
 	int additional = 0;
 	if (SIZE > 9)
@@ -302,24 +303,24 @@ void PrintGrid(int Sudoku[][SIZE]){
 	ext_border += '+';
 	int_border += "|";
 
-	std::cout << ext_border << std::endl;
+	cout << ext_border << endl;
 	for (int i = 0; i<SIZE; i++){
-		std::cout << "| ";
+		cout << "| ";
 		for (int j = 0; j<SIZE; j++){
 			if (Sudoku[i][j] == 0)
-				std::cout << ". ";
+				cout << ". ";
 			else
-				std::cout << Sudoku[i][j] << " ";
+				cout << Sudoku[i][j] << " ";
 			if (additional > 0 && Sudoku[i][j]<10)
-				std::cout << " ";
+				cout << " ";
 			if ((j+1)%SIZE_SQRT == 0)
-				std::cout << "| ";
+				cout << "| ";
 		}
-		std::cout << std::endl;
+		cout << endl;
 		if ((i + 1) % SIZE_SQRT == 0 && (i+1)<SIZE)
-			std::cout << int_border << std::endl;
+			cout << int_border << endl;
 	}
-	std::cout << ext_border << std::endl << std::endl;
+	cout << ext_border << endl << endl;
 }
 
 //--------------------------------------------------------------------------------//
@@ -331,7 +332,7 @@ void SolveSudoku(int Sudoku[][SIZE]) {
 	TransformListToCurrentGrid(Sudoku);
 	search(0);
 	if (!isSolved)
-		std::cout << "No Solution!" << std::endl;
+		cout << "No Solution!" << endl;
 	isSolved = false;
 }
 
