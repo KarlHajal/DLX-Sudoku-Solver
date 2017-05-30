@@ -74,7 +74,7 @@ void search(int k) {
 		MapSolutionToGrid(Grid);
 		PrintGrid(Grid);
 		std::cout << "Time Elapsed: " << (float)timer2 / CLOCKS_PER_SEC << " seconds.\n\n";
-		system("pause");
+		cin.get(); //Pause console
 		timer = clock();
 		isSolved = true;
 		return;
@@ -356,5 +356,6 @@ int main(){
 
 	SolveSudoku(Puzzle);
 
+	cin.get();
 	return 0;
 }
